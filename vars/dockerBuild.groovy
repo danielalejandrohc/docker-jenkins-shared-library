@@ -5,7 +5,7 @@ def call(args) {
     def given_args = args.keySet();
     MANDATORY_ARGS.each {
         mandatoryArg ->
-            if(args.containsKey(mandatoryArg))
+            if(!args.containsKey(mandatoryArg))
                 error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'"
     }
 
