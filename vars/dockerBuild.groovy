@@ -26,8 +26,13 @@ def call(args) {
 
     echo "Arguments: ${args}";        
         
+    usernameP = null;
+    passwordP = null;    
     withCredentials([usernamePassword(credentialsId: args.credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) {
-        sh "docker login -u ${username} -p ${password} https://${args.registry}";
-        sh "docker build -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} ${args.path}"
+        usernameP = username;
+        passwordP = password;
     }
+
+    sh "docker login -u ${username} -p ${password} https://${args.registry}";
+    sh "docker build -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} ${args.path}"
 }
