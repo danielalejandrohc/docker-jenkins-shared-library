@@ -1,8 +1,8 @@
 
 /*
     This method is to build a docker image
-    'credentialsId': This is a credential id of type "User and password"
-    'registry': This is docker registry. i.e registry.hub.docker.com
+    'registriesConf': This is a configuration mapping to allow to resolve against all these regisrties a single docker build. These allows to combine Docker registries when the 'docker build ...' is performed
+    'registry': This is docker registry. i.e registry.hub.docker.com. This is the registry that will be used to perform the tag
     'registryOrg': This is docker organization name in the registry
     'imageName': This is the name of the image
     'dockerFile': (Optional) If not specified the default value will be: 'Dockerfile'
@@ -39,7 +39,7 @@ def call(args) {
                     error "'registryConf' expected a key-value object (Map) with these parameters ${mandatoryConfFields}"
                 }
         }
-        
+
     } else {
         error "'registriesConf' has incompatible type. It should be 'List' with entries ${mandatoryConfFields}. Type found ${args.registriesConf.getClass()}"
     }
@@ -73,7 +73,7 @@ def call(args) {
         sh "docker pull ${args.imageName}:${args.dockerTag}";
         sh "docker tag ${args.imageName}:${args.dockerTag} ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}"
     } else {
-        // If parameter 'dockerFile' is provided then it will build the file
+        // If the parameter 'dockerFile' is provided then it will build the file
         sh "docker build -f ${args.dockerFile} -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} -t latest ${args.path}";
     }    
 }
