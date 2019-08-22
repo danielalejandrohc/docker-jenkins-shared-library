@@ -20,6 +20,17 @@ def call(args) {
                 error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'"
     }
 
+    registriesConf = [
+        [
+            "credentialId": "azureCredentialsId",
+            "registry": "acrliq001.azurecr.io"
+        ],
+        [
+            "credentialId": "dockerhubCredentialsId",
+            "registry": "registry.hub.docker.com"
+        ]
+    ]
+
     // Check If it got a list or single value of Jenkins credentials
     listOfCredentials = [];
     if(args.credentialsId instanceof List) {
@@ -43,18 +54,19 @@ def call(args) {
 
     echo "Arguments: ${args}";        
 
-    listOfCredentials.each {
-        credential ->
-            withCredentials([usernamePassword(credentialsId: credential, passwordVariable: 'password', usernameVariable: 'username')]) {
+    registriesConf.each {
+        registryConf -> 
+            withCredentials([usernamePassword(credentialsId: registryConf.credentialId, passwordVariable: 'password', usernameVariable: 'username')]) {
                 try {
-                    sh "docker login -u ${username} -p ${password} https://${args.registry}";
+                    sh "docker login -u ${username} -p ${password} https://${registryConf.registry}";
                     echo "Docker login perfomed."
                 } catch(e) {
                     error "Error docker login ${e}"
                 }
             }
-    }       
+    }
     
+        
     // Assign default values
     if(!args.containsKey("dockerFile")) {
         // When no 'dockerFile' parameter is provided but 'imageName' is found the it will pull the image from Dockerhub and tag it with the registry provided
