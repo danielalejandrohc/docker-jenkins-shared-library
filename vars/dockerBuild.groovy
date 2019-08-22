@@ -20,17 +20,6 @@ def call(args) {
                 error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'";
     }
 
-    registriesConf = [
-        [
-            "credentialId": "azureCredentialsId",
-            "registry": "acrliq001.azurecr.io"
-        ],
-        [
-            "credentialId": "dockerhubCredentialsId",
-            "registry": "registry.hub.docker.com"
-        ]
-    ]
-
     // Check the structure of the registries configuration
     if( args.registriesConf instanceof Map ) {
         echo "credentialsId type: Map";
@@ -57,7 +46,7 @@ def call(args) {
 
     echo "Arguments: ${args}";        
 
-    registriesConf.each {
+    args.registriesConf.each {
         registryConf -> 
             withCredentials([usernamePassword(credentialsId: registryConf.credentialId, passwordVariable: 'password', usernameVariable: 'username')]) {
                 try {
@@ -67,8 +56,7 @@ def call(args) {
                     error "Error docker login ${e}"
                 }
             }
-    }
-    
+    }    
         
     // Assign default values
     if(!args.containsKey("dockerFile")) {
