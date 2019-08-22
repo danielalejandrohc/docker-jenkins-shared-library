@@ -22,7 +22,7 @@ def call(args) {
 
     // Check the structure of the registries configuration
     def mandatoryConfFields = ['credentialId', 'registry'];
-    if( args.registriesConf instanceof Map ) {
+    if( args.registriesConf instanceof List ) {
         echo "registriesConf type: Map";
         // Validate fields        
         def givenConf = args.registriesConf.keySet();
@@ -32,7 +32,7 @@ def call(args) {
                     error "Error: entry ${mandatoryConfField} should contain these fields: ${mandatoryConfFields}";
         }
     } else {
-        error "'registriesConf' has incompatible type. It should be 'Map' with entries ${mandatoryConfFields}. Type found ${args.registriesConf.getClass()}"
+        error "'registriesConf' has incompatible type. It should be 'List' with entries ${mandatoryConfFields}. Type found ${args.registriesConf.getClass()}"
     }
 
     // If 'path' parameter does not exists then It will assign the default path, which is the current path: '.'
