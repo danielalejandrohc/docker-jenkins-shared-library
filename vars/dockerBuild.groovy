@@ -20,11 +20,7 @@ def call(args) {
                 error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'"
     }
 
-    // Assign default values
-    // If 'dockerfile' parameter does not exists then It will assign the default dockerfile name: 'Dockerfile'
-    if(!args.containsKey("dockerFile")) {
-        args.dockerFile = "Dockerfile";
-    }
+    
 
     // If 'path' parameter does not exists then It will assign the default path, which is the current path: '.'
     if(!args.containsKey("path")) {
@@ -45,6 +41,13 @@ def call(args) {
             error "Error docker login ${e}"
         }
     }
-
-    sh "docker build -f ${args.dockerFile} -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} -t latest ${args.path}";
+    // Assign default values
+    if(!args.containsKey("dockerFile")) {
+        // When no 'dockerFile' parameter is provided but 'imageName' is found the it will pull the image from Dockerhub and tag it with the registry provided
+        sh "docker pull ${args.imageName}:${args.dockerTag}";
+        sh "docker tag ${args.imageName}:${args.dockerTag} ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}"
+    } else {
+        // If parameter 'dockerFile' is provided then it will build the file
+        sh "docker build -f ${args.dockerFile} -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} -t latest ${args.path}";
+    }    
 }

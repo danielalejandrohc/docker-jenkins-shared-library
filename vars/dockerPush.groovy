@@ -44,5 +44,4 @@ def call(args) {
         }
     }
     sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}";
-    sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:latest";
 }
