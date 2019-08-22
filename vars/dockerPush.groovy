@@ -8,53 +8,36 @@
     'dockerTag': (Optional) If not specified the default value will be: 'latest'
 */
 def call(args) {
-    def MANDATORY_ARGS = ['registriesConf', 'registry', 'registryOrg', 'imageName'];
+    def MANDATORY_ARGS = ['credentialsId', 'registry', 'registryOrg', 'imageName']
 
     // Check for missing (mandatory) parameters
     def given_args = args.keySet();
     MANDATORY_ARGS.each {
         mandatoryArg ->
             if(!args.containsKey(mandatoryArg))
-                error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'";
+                error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'"
     }
 
-    // Check the structure of the registries configuration
-    def mandatoryConfFields = ['credentialId', 'registry'];
-    if( args.registriesConf instanceof List ) {
-        echo "registriesConf type: Map";          
-        
-        args.registriesConf.each {
-            registryConf ->
-                if (registryConf instanceof Map) { 
-                    def givenConf = registryConf.keySet();
-                    mandatoryConfFields.each {
-                        mandatoryArg ->
-                            if(!registryConf.containsKey(mandatoryArg)) {
-                                error "${mandatoryArg} is missing ${mandatoryArg}"
-                            } 
-                    }
-                } else {
-                    error "'registryConf' expected a key-value object (Map) with these parameters ${mandatoryConfFields}"
-                }
-        }
+    // Assign default values
+    // If 'dockerfile' parameter does not exists then It will assign the default dockerfile name: 'Dockerfile'
+    if(!args.containsKey("dockerFile")) {
+        args.dockerFile = "Dockerfile";
+    }
 
-    } else {
-        error "'registriesConf' has incompatible type. It should be 'List' with entries ${mandatoryConfFields}. Type found ${args.registriesConf.getClass()}"
+
+    if(!args.containsKey("dockerTag")) {
+        args.dockerTag = "latest";
     }
 
     echo "Arguments: ${args}";        
            
-    args.registriesConf.each {
-        registryConf -> 
-            withCredentials([usernamePassword(credentialsId: registryConf.credentialId, passwordVariable: 'password', usernameVariable: 'username')]) {
-                try {
-                    sh "docker login -u ${username} -p ${password} https://${registryConf.registry}";
-                    echo "Docker login perfomed."
-                } catch(e) {
-                    error "Error docker login ${e}"
-                }
-            }
+    withCredentials([usernamePassword(credentialsId: args.credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) {
+        try {
+            sh "docker login -u ${username} -p ${password} https://${args.registry}";
+            echo "Docker login perfomed."
+        } catch(e) {
+            error "Error docker login ${e}"
+        }
     }
-    
     sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}";
 }
