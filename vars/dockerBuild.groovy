@@ -20,7 +20,17 @@ def call(args) {
                 error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'"
     }
 
-    
+    // Check If it got a list or single value of Jenkins credentials
+    listOfCredentials = [];
+    if(args.credentialsId instanceof List) {
+        echo "credentialsId type: List";
+        listOfCredentials = args.credentialsId;
+    } else (args.credentialsId instanceof String) {
+        echo "credentialsId type: String";
+        listOfCredentials.add(args.credentialsId);
+    } else {
+        error "'credentialsId' has incompatible type. It should be List or String. Type found ${args.credentialsId.getClass()}"
+    }
 
     // If 'path' parameter does not exists then It will assign the default path, which is the current path: '.'
     if(!args.containsKey("path")) {
@@ -32,15 +42,19 @@ def call(args) {
     }
 
     echo "Arguments: ${args}";        
-           
-    withCredentials([usernamePassword(credentialsId: args.credentialsId, passwordVariable: 'password', usernameVariable: 'username')]) {
-        try {
-            sh "docker login -u ${username} -p ${password} https://${args.registry}";
-            echo "Docker login perfomed."
-        } catch(e) {
-            error "Error docker login ${e}"
-        }
-    }
+
+    listOfCredentials.each {
+        credential ->
+            withCredentials([usernamePassword(credentialsId: credential, passwordVariable: 'password', usernameVariable: 'username')]) {
+                try {
+                    sh "docker login -u ${username} -p ${password} https://${args.registry}";
+                    echo "Docker login perfomed."
+                } catch(e) {
+                    error "Error docker login ${e}"
+                }
+            }
+    }       
+    
     // Assign default values
     if(!args.containsKey("dockerFile")) {
         // When no 'dockerFile' parameter is provided but 'imageName' is found the it will pull the image from Dockerhub and tag it with the registry provided
