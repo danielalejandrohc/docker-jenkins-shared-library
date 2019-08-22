@@ -5,8 +5,7 @@
     'registry': 
     'registryOrg': 
     'imageName':
-    'dockerFile':
-    'path':
+    'dockerTag':
 */
 def call(args) {
     def MANDATORY_ARGS = ['credentialsId', 'registry', 'registryOrg', 'imageName']
@@ -44,6 +43,5 @@ def call(args) {
             error "Error docker login ${e}"
         }
     }
-
-    sh "docker build -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} ${args.path}";
+    sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}"
 }
