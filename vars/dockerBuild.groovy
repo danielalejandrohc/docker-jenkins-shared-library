@@ -25,16 +25,21 @@ def call(args) {
     if( args.registriesConf instanceof List ) {
         echo "registriesConf type: Map";          
         
-        mandatoryConfFields.each {
-            mandatoryConfField ->
-                if (mandatoryConfField instanceof Map) {
-                    def givenConf = mandatoryConfField.keySet();
-                    if(!args.registriesConf.containsKey(mandatoryConfField))
-                        error "Error: entry ${mandatoryConfField} should contain these fields: ${mandatoryConfFields}";
+        args.registriesConf.each {
+            registryConf ->
+                if (registryConf instanceof Map) { 
+                    def givenConf = registryConf.keySet();
+                    mandatoryConfFields.each {
+                        mandatoryArg ->
+                            if(!registryConf.containsKey(mandatoryArg)) {
+                                error "${mandatoryArg} is missing ${mandatoryArg}"
+                            } 
+                    }
                 } else {
-                    error "Entry for 'registriesConf' should be a key-pair values (Map) with these fields ${mandatoryConfFields}";
-                }                
+                    error "'registryConf' expected a key-value object (Map) with these parameters ${mandatoryConfFields}"
+                }
         }
+        
     } else {
         error "'registriesConf' has incompatible type. It should be 'List' with entries ${mandatoryConfFields}. Type found ${args.registriesConf.getClass()}"
     }
