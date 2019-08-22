@@ -25,7 +25,7 @@ def call(args) {
     if(args.credentialsId instanceof List) {
         echo "credentialsId type: List";
         listOfCredentials = args.credentialsId;
-    } else (args.credentialsId instanceof String) {
+    } else if (args.credentialsId instanceof String) {
         echo "credentialsId type: String";
         listOfCredentials.add(args.credentialsId);
     } else {
