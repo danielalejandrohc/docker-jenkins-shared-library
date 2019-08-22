@@ -33,6 +33,6 @@ def call(args) {
         passwordP = password;
     }
 
-    sh "docker login -u ${username} -p ${password} https://${args.registry}";
+    sh "docker login -u ${usernameP} -p ${passwordP} https://${args.registry}";
     sh "docker build -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} ${args.path}"
 }
