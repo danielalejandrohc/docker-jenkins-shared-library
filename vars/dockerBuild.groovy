@@ -10,14 +10,14 @@
     'dockerTag': (Optional) If not specified the default value will be: 'latest'
 */
 def call(args) {
-    def MANDATORY_ARGS = ['credentialsId', 'registry', 'registryOrg', 'imageName']
+    def MANDATORY_ARGS = ['registriesConf', 'registry', 'registryOrg', 'imageName'];
 
     // Check for missing (mandatory) parameters
     def given_args = args.keySet();
     MANDATORY_ARGS.each {
         mandatoryArg ->
             if(!args.containsKey(mandatoryArg))
-                error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'"
+                error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'";
     }
 
     registriesConf = [
@@ -31,16 +31,19 @@ def call(args) {
         ]
     ]
 
-    // Check If it got a list or single value of Jenkins credentials
-    listOfCredentials = [];
-    if(args.credentialsId instanceof List) {
-        echo "credentialsId type: List";
-        listOfCredentials = args.credentialsId;
-    } else if (args.credentialsId instanceof String) {
-        echo "credentialsId type: String";
-        listOfCredentials.add(args.credentialsId);
+    // Check the structure of the registries configuration
+    if( args.registriesConf instanceof Map ) {
+        echo "credentialsId type: Map";
+        // Validate fields
+        def mandatoryConfFields = ['credentialId', 'registry'];
+        def givenConf = args.registriesConf.keySet();
+        mandatoryConfFields.each {
+            mandatoryConfField ->
+                if(!args.registriesConf.containsKey(mandatoryConfField))
+                    error "Error: entry ${mandatoryConfField} should contain these fields: ${mandatoryConfFields}";
+        }
     } else {
-        error "'credentialsId' has incompatible type. It should be List or String. Type found ${args.credentialsId.getClass()}"
+        error "'credentialsId' has incompatible type. It should be 'Map' with entries ${mandatoryConfFields}. Type found ${args.credentialsId.getClass()}"
     }
 
     // If 'path' parameter does not exists then It will assign the default path, which is the current path: '.'
