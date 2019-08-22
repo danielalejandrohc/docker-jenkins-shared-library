@@ -39,6 +39,6 @@ def call(args) {
     } catch(e) {
         echo "Error docker login ${e}"
     }
-    sh "docker build ."
-    //sh "docker build -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} ${args.path}"
+    //sh "docker build ."
+    sh "docker build -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} ${args.path}"
 }
