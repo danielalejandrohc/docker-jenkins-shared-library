@@ -1,11 +1,11 @@
 
 /*
     This method is to build a docker image
-    'credentialsId': 
-    'registry': 
-    'registryOrg': 
-    'imageName':
-    'dockerTag':
+    'credentialsId': This is a credential id of type "User and password"
+    'registry': This is docker registry. i.e registry.hub.docker.com
+    'registryOrg': This is docker organization name in the registry
+    'imageName': This is the name of the image
+    'dockerTag': (Optional) If not specified the default value will be: 'latest'
 */
 def call(args) {
     def MANDATORY_ARGS = ['credentialsId', 'registry', 'registryOrg', 'imageName']
@@ -43,5 +43,6 @@ def call(args) {
             error "Error docker login ${e}"
         }
     }
-    sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}"
+    sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}";
+    sh "docker push ${args.registry}/${args.registryOrg}/${args.imageName}:latest";
 }
