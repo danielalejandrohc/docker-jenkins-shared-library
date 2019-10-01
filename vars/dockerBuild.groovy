@@ -10,38 +10,15 @@
     'dockerTag': (Optional) If not specified the default value will be: 'latest'
 */
 def call(args) {
-    def MANDATORY_ARGS = ['registriesConf', 'registry', 'registryOrg', 'imageName'];
+    def DOCKER_HUB_REGISTRY = "registry.hub.docker.com";
+    def MANDATORY_ARGS = ['registry', 'registryOrg', 'imageName'];
 
-    // Check for missing (mandatory) parameters
+    // Check If missing (mandatory) parameters
     def given_args = args.keySet();
     MANDATORY_ARGS.each {
         mandatoryArg ->
             if(!args.containsKey(mandatoryArg))
                 error "Error: ${mandatoryArg} is missing. Custom step: 'dockerBuild'";
-    }
-
-    // Check the structure of the registries configuration
-    def mandatoryConfFields = ['credentialId', 'registry'];
-    if( args.registriesConf instanceof List ) {
-        echo "registriesConf type: Map";          
-        
-        args.registriesConf.each {
-            registryConf ->
-                if (registryConf instanceof Map) { 
-                    def givenConf = registryConf.keySet();
-                    mandatoryConfFields.each {
-                        mandatoryArg ->
-                            if(!registryConf.containsKey(mandatoryArg)) {
-                                error "${mandatoryArg} is missing ${mandatoryArg}"
-                            } 
-                    }
-                } else {
-                    error "'registryConf' expected a key-value object (Map) with these parameters ${mandatoryConfFields}"
-                }
-        }
-
-    } else {
-        error "'registriesConf' has incompatible type. It should be 'List' with entries ${mandatoryConfFields}. Type found ${args.registriesConf.getClass()}"
     }
 
     // If 'path' parameter does not exists then It will assign the default path, which is the current path: '.'
@@ -55,25 +32,30 @@ def call(args) {
 
     echo "Arguments: ${args}";        
 
-    args.registriesConf.each {
-        registryConf -> 
-            withCredentials([usernamePassword(credentialsId: registryConf.credentialId, passwordVariable: 'password', usernameVariable: 'username')]) {
+    if(!args.registry.contains(DOCKER_HUB_REGISTRY)) {
+        if(args.containsKey("credentialId")) {
+            withCredentials([usernamePassword(credentialsId: args.credentialId, passwordVariable: 'password', usernameVariable: 'username')]) {
                 try {
-                    sh "docker login -u ${username} -p ${password} https://${registryConf.registry}";
-                    echo "Docker login perfomed."
+                    sh "docker login -u ${username} -p ${password} https://${args.registry}";                   
+                    echo "Docker login perfomed.";
                 } catch(e) {
-                    error "Error docker login ${e}"
+                    error "Error docker login ${e}";
                 }
             }
-    }    
+        } else {
+            error "A credential is expected to use a different registry than Dockerhub. Provide parameter 'credentialId'";
+        }        
+    } else {
+        echo "No login required to Dockerhub";
+    }
+    
         
-    // Assign default values
     if(!args.containsKey("dockerFile")) {
         // When no 'dockerFile' parameter is provided but 'imageName' is found the it will pull the image from Dockerhub and tag it with the registry provided
         sh "docker pull ${args.imageName}:${args.dockerTag}";
-        sh "docker tag ${args.imageName}:${args.dockerTag} ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag}"
+        sh "docker tag ${args.imageName}:${args.dockerTag} ${args.registryOrg}/${args.imageName}:${args.dockerTag}"
     } else {
         // If the parameter 'dockerFile' is provided then it will build the file
-        sh "docker build -f ${args.dockerFile} -t ${args.registry}/${args.registryOrg}/${args.imageName}:${args.dockerTag} -t latest ${args.path}";
+        sh "docker build -f ${args.dockerFile} -t ${args.registryOrg}/${args.imageName}:${args.dockerTag} -t ${args.dockerTag} ${args.path}";
     }    
 }
