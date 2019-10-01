@@ -8,7 +8,7 @@
 def call(Map args = [:]) {
 
     //Store Constants: Mandatory Arguments, Dockerfile name
-    final List<String> MANDATORY_ARGS = ['DockerFilename']
+    final List<String> MANDATORY_ARGS = ['path']
 
     //Check for missing (mandatory) parameters
     def given_args = args.keySet();
@@ -19,7 +19,7 @@ def call(Map args = [:]) {
 
     //Stage which executes dockerlint
     stage('Execute dockerlint test') {
-        sh "dockerlint ${args['DockerFilename']}"
+        sh "dockerlint ${args['path']}"
 
     }
 }
