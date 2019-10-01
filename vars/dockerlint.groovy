@@ -2,7 +2,6 @@
 
 /**
 * This method is a part of the CEE Shared Library project
-* @author far00100 Farshid Mahdavipour - 8/18/2019
 * @return One of the possible outputs specified in dockerlint.txt
 */
 def call(Map args = [:]) {
@@ -19,7 +18,6 @@ def call(Map args = [:]) {
 
     //Stage which executes dockerlint
     stage('Execute dockerlint test') {
-        sh "dockerlint ${args['path']}"
-
+        sh "dockerlint ${args['path']}";
     }
 }
